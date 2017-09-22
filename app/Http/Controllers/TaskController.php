@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Task;
+use App\User;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -14,9 +15,11 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = Task::all();
+        $tasks = Task::with('users')->latest()->get();
 
-        return view('tasks.index', compact('tasks'));
+        return $tasks;
+
+        // return view('tasks.index', compact('tasks'));
     }
 
     /**
@@ -26,7 +29,7 @@ class TaskController extends Controller
      */
     public function create()
     {
-        //
+        // return view('tasks.create');
     }
 
     /**
@@ -37,7 +40,20 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->validate($request, ['body' => 'required']);
+
+        $task = new Task;
+
+        $task->body = $request->input('body');
+        $task->user_id = 2;
+
+        $task->save();
+
+        Task::find($task->id)->users()->attach($request->input('user_id'));
+
+
+        return $task->id;
+
     }
 
     /**
@@ -46,9 +62,12 @@ class TaskController extends Controller
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function show(Task $task)
+    public function show($id, Task $task)
     {
-        //
+        $task = $task::find($id);
+        $user_id = $task::find($id)->users;
+
+        return ['task' => $task, 'user_id' => $user_id];
     }
 
     /**
@@ -57,7 +76,7 @@ class TaskController extends Controller
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function edit(Task $task)
+    public function edit($id, Task $task)
     {
         //
     }
@@ -69,9 +88,20 @@ class TaskController extends Controller
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Task $task)
+    public function update($id, Request $request, Task $task)
     {
-        //
+        $task = $task::find($id);
+
+        $task->body = $request->input('body');
+        $task->user_id = rand(1, 5);
+
+        $task->save();
+
+        $task->users()->detach();
+
+        $task->users()->attach($request->input('user_id'));
+
+        return $request->input('user_id');
     }
 
     /**
@@ -80,8 +110,8 @@ class TaskController extends Controller
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Task $task)
+    public function destroy($id, Task $task)
     {
-        //
+        return $task::destroy($id);
     }
 }

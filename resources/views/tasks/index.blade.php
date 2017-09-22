@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{{-- <!DOCTYPE html>
 <html>
 	<head>
 		<title>SPA</title>
@@ -44,4 +44,4 @@
 
 		<script type="{{ asset('js/app.js') }}"></script>
 	</body>
-</html>
+</html> --}}
